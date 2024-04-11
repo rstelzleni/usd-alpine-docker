@@ -16,12 +16,30 @@ RUN apk update \
 RUN apk add --no-cache \
     py3-jinja2
 
-
-RUN git clone --depth 1 https://github.com/PixarAnimationStudios/USD
-
-
+# Build a patched, legacy version of TBB for USD
 RUN apk add --no-cache \
+    curl \
     linux-headers
+
+RUN curl https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2020.3.zip -o ./TBBv2020.3.zip -L
+COPY patches .
+RUN unzip ./TBBv2020.3.zip && cd oneTBB-2020.3 && \
+    patch include/tbb/task.h ../missing-namespace.patch && \
+    patch src/tbbmalloc/proxy.h ../disable-malloc-hook.patch && \
+    patch src/tbbmalloc/proxy.cpp ../prevent-undefined-glibc-macro-error.patch && \
+    make && \
+    mkdir /opt/vendored && \
+    mkdir /opt/vendored/lib && \
+    mkdir /opt/vendored/include && \
+    cp build/*_release/libtbb*.* /opt/vendored/lib && \
+    cp -R include/serial /opt/vendored/include/ && \
+    cp -R include/tbb /opt/vendored/include/
+
+# Build USD
+
+#RUN git clone --depth 1 https://github.com/PixarAnimationStudios/USD
+
+
 
 #RUN cd USD && g++ --version && python3 build_scripts/build_usd.py \
 #    -vvv \
@@ -35,23 +53,20 @@ RUN apk add --no-cache \
 #    --no-imaging \
 #    /opt/USD
 
-RUN apk add --no-cache \
-    boost-dev \
-    onetbb
-
-RUN apk add --no-cache onetbb-dev
+#RUN apk add --no-cache \
+#    boost-dev
 
 #    -DBOOST_ROOT=/usr/lib \
-#    -DTBB_ROOT_DIR=/usr/lib \
-RUN cmake \
-    -DPXR_BUILD_USD_IMAGING=FALSE \
-    -DPXR_BUILD_IMAGING=OFF \
-    -DPXR_ENABLE_GL_SUPPORT=FALSE \
-    -DPXR_ENABLE_MATERIALX_SUPPORT=FALSE \
-    -DPXR_BUILD_EXAMPLES=FALSE \
-    -DPXR_BUILD_DOCUMENTATION=FALSE \
-    -DPXR_BUILD_TUTORIALS=FALSE \
-    ./USD
+#RUN cmake \
+#    -DTBB_ROOT_DIR=/opt/vendored \
+#    -DPXR_BUILD_USD_IMAGING=FALSE \
+#    -DPXR_BUILD_IMAGING=OFF \
+#    -DPXR_ENABLE_GL_SUPPORT=FALSE \
+#    -DPXR_ENABLE_MATERIALX_SUPPORT=FALSE \
+#    -DPXR_BUILD_EXAMPLES=FALSE \
+#    -DPXR_BUILD_DOCUMENTATION=FALSE \
+#    -DPXR_BUILD_TUTORIALS=FALSE \
+#    ./USD
 
 #RUN cd USD && cmake --build . --target install
 

@@ -100,4 +100,27 @@ One way to thread this needle would be to get the 2020.3 source, patch it to bui
 gcc 13, build our own version and then build USD using cmake directly instead of build_usd.py.
 I guess that's what I'll try next.
 
+TBB 2020.3 seems to need 2 changes to build under gcc 13. A namespace is missing on a
+task object in one header, and a feature for hooking malloc needs to be disabled, because
+it relies on a mallinfo struct that is only implementedin glibc. Our musl libc doesn't
+have it. This can be disabled by setting a value in a header.
+
+Oh, also, the macro __GLIBC_PREREQ is not defined, so checks that call it as a function
+fail in the preprocessor, even if the check would be short-circuited by a defined check.
+So 3 changes
+
+Once that's done I get a successful build, and the TBB tests pass in the container. One
+note about the tests, I do get this warning:
+
+```
+./test_concurrent_vector.exe  
+Warning: not much concurrency in TestConcurrentGrowBy (37 inversions)
+done
+```
+
+The rest of the tests pass without complaint, so the next step is to automate this
+build in the dockerfile. I'll do that with a couple patch files we'll apply to the
+downloaded TBB files. Then in the docker container we'll copy the TBB artifacts into
+a vendored dependencies folder for USD and move on.
+
 
