@@ -31,5 +31,10 @@ docker buildx build --platform linux/arm64,linux/amd64 --tag rstelzleni/usd-alpi
 ```
 
 When publishing tag this github repo and the USD branch to match the usd-alpine
-tag.
+tag. For instance, if the dockerhub repo is rstelzleni/usd-alpine:usd-24.03
+
+```
+git tag -a usd-24.03 -m "my tag comment"
+git push origin usd-24.03
+```
 
