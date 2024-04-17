@@ -2,8 +2,6 @@
 
 USD builds in alpine docker, for making slim docker containers with USD support.
 
-The v24.03 builds are around a 45 MB download.
-
 ## Versions
 
 ### usd-24.03
