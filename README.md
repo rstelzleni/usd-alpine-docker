@@ -6,7 +6,7 @@ The v24.03 builds are around a 45 MB download.
 
 ## Versions
 
-### v24.03
+### usd-24.03
 
 ~45 MB download
 
