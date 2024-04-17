@@ -66,7 +66,7 @@ RUN cmake --build . --config Release --target install -j8
 #
 # RUN ctest
 
-# Make the final image
+# Make the trimmed down image
 
 FROM alpine:3
 COPY --from=Builder /opt /opt
@@ -78,5 +78,5 @@ RUN apk update \
     boost-python3 \
     'python3<3.12'
 
-ENTRYPOINT [ "/opt/USD/bin/usdcat", "-h" ]
+ENTRYPOINT [ "/opt/USD/bin/usdcat" ]
 
