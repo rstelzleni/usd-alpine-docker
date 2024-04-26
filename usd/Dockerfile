@@ -35,7 +35,7 @@ RUN unzip ./TBBv2020.3.zip && cd oneTBB-2020.3 && \
 
 # Build USD
 
-RUN git clone --single-branch  -b v24.03-alpine --depth 1 https://github.com/rstelzleni/USD
+RUN git clone --single-branch  -b v24.05-alpine --depth 1 https://github.com/rstelzleni/USD
 
 RUN mkdir /src/USD-build
 WORKDIR /src/USD-build
