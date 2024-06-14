@@ -1,0 +1,27 @@
+FROM rstelzleni/usd-alpine:imaging-24.05
+
+# Add dependencies for opengl
+
+# Qt alone requires around 400 MB of space in the image. The image can do
+# without it, so we don't install pyside or qt packages
+
+RUN apk update \
+  && apk upgrade \
+  && apk add --no-cache \
+    glfw \
+    mesa-dri-gallium \
+    py3-opengl \
+    py3-pip \
+    xrandr \
+    xterm \
+    xvfb
+
+# There is no glfw builtin package for alpine, so this "break packages"
+# call is needed.
+RUN pip install --break-system-packages glfw
+
+ADD scripts/generate-image-gl.py /opt
+ADD scripts/entrypoint.sh /opt
+
+ENTRYPOINT [ "/opt/entrypoint.sh", "python3", "/opt/generate-image-gl.py" ]
+
