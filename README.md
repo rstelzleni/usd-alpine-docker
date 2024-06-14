@@ -9,9 +9,11 @@ https://hub.docker.com/repository/docker/rstelzleni/usd-alpine/general
 
 ### usd-24.05
 
-base: ~45 MB download
-imaging: ~57 MB download
-gl: ~142 MB download
+| image   | Download Size |
+| ------- | ------------- |
+| base    | ~45 MB        |
+| imaging | ~57 MB        |
+| gl      | ~142 MB       |
 
 Base has the same contents as 24.03. Imaging and GL are new images that add
 usdImaging support and add a virtual framebuffer for software GL rendering.
