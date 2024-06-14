@@ -9,9 +9,12 @@ https://hub.docker.com/repository/docker/rstelzleni/usd-alpine/general
 
 ### usd-24.05
 
-~45 MB download
+base: ~45 MB download
+imaging: ~57 MB download
+gl: ~142 MB download
 
-Same contents as 24.03. 
+Base has the same contents as 24.03. Imaging and GL are new images that add
+usdImaging support and add a virtual framebuffer for software GL rendering.
 
 There are some new test failures with shaders in testUsdChecker. I didn't get
 to the bottom of these. My guess is this is not specific to the Alpine version.
@@ -40,12 +43,19 @@ cd usd
 docker buildx build --platform linux/arm64,linux/amd64 --tag rstelzleni/usd-alpine:usd-24.03  --tag rstelzleni/usd-alpine:latest --builder=multi-builder --push .
 ```
 
-When publishing tag this github repo and the USD branch to match the usd-alpine
-tag. For instance, if the dockerhub repo is rstelzleni/usd-alpine:usd-24.03
+Imaging containers are published like
 
 ```
-git tag -a usd-24.03 -m "code used for dockerhub rstelzleni/usd-alpine:usd-24.05"
-git push origin tag usd-24.03
+docker buildx build --platform linux/arm64,linux/amd64 --tag rstelzleni/usd-alpine:imaging-24.05 --tag rstelzleni/usd-alpine:imaging-latest --builder=multi-builder -f Dockerfile.imaging-base --push .
+docker buildx build --platform linux/arm64,linux/amd64 --tag rstelzleni/usd-alpine:gl-24.05 --tag rstelzleni/usd-alpine:gl-latest --builder=multi-builder -f Dockerfile.gl --push .
+```
+
+When publishing tag this github repo and the USD branch to match the usd-alpine
+tag. For instance, if the dockerhub repo is rstelzleni/usd-alpine:usd-24.05
+
+```
+git tag -a usd-24.05 -m "code used for dockerhub rstelzleni/usd-alpine:usd-24.05"
+git push origin tag usd-24.05
 ```
 
 ### Syncing USD from upstream
