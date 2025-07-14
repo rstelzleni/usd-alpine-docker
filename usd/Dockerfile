@@ -1,4 +1,4 @@
-FROM alpine:3 AS Builder
+FROM alpine:3 AS builder
 WORKDIR /src
 
 RUN apk update \
@@ -13,36 +13,20 @@ RUN apk update \
     curl \
     git \
     linux-headers \
-    'python3<3.12' \
-    'python3-dev<3.12' \
+    onetbb \
+    onetbb-dev \
+    'python3<3.13' \
+    'python3-dev<3.13' \
     py3-jinja2
-
-# Build a patched, legacy version of TBB for USD
-
-RUN curl https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2020.3.zip -o ./TBBv2020.3.zip -L
-COPY patches .
-RUN unzip ./TBBv2020.3.zip && cd oneTBB-2020.3 && \
-    patch include/tbb/task.h ../missing-namespace.patch && \
-    patch src/tbbmalloc/proxy.h ../disable-malloc-hook.patch && \
-    patch src/tbbmalloc/proxy.cpp ../prevent-undefined-glibc-macro-error.patch && \
-    make && \
-    mkdir /opt/vendored && \
-    mkdir /opt/vendored/lib && \
-    mkdir /opt/vendored/include && \
-    cp build/*_release/libtbb*.* /opt/vendored/lib && \
-    cp -R include/serial /opt/vendored/include/ && \
-    cp -R include/tbb /opt/vendored/include/
 
 # Build USD
 
-RUN git clone --single-branch  -b v24.05-alpine --depth 1 https://github.com/rstelzleni/USD
+RUN git clone --single-branch  -b v25.05.01-alpine --depth 1 https://github.com/rstelzleni/USD
 
 RUN mkdir /src/USD-build
 WORKDIR /src/USD-build
 
 RUN cmake \
-    -DTBB_ROOT_DIR=/opt/vendored \
-    -DCMAKE_PREFIX_PATH=/opt/vendored \
     -DPXR_BUILD_USD_IMAGING=FALSE \
     -DPXR_BUILD_IMAGING=FALSE \
     -DPXR_ENABLE_GL_SUPPORT=FALSE \
@@ -69,14 +53,15 @@ RUN cmake --build . --config Release --target install -j8
 # Make the trimmed down image
 
 FROM alpine:3
-COPY --from=Builder /opt /opt
+COPY --from=builder /opt /opt
 ENV PYTHONPATH=/opt/USD/lib/python
 
 RUN apk update \
   && apk upgrade \
   && apk add --no-cache \
     boost-python3 \
-    'python3<3.12'
+    onetbb \
+    'python3<3.13'
 
 ENTRYPOINT [ "/opt/USD/bin/usdcat" ]
 

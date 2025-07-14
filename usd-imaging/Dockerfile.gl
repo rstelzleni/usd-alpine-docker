@@ -1,4 +1,4 @@
-FROM rstelzleni/usd-alpine:imaging-24.05
+FROM rstelzleni/usd-alpine:imaging-25.05.01
 
 # Add dependencies for opengl
 
@@ -12,6 +12,7 @@ RUN apk update \
     mesa-dri-gallium \
     py3-opengl \
     py3-pip \
+    xinit \
     xrandr \
     xterm \
     xvfb
