@@ -1,4 +1,4 @@
-FROM alpine:3.19 AS Builder
+FROM alpine AS builder
 WORKDIR /src
 
 RUN apk update \
@@ -13,34 +13,21 @@ RUN apk update \
     curl \
     git \
     linux-headers \
-    'python3<3.12' \
-    'python3-dev<3.12' \
+    onetbb \
+    onetbb-dev \
+    'python3<3.13' \
+    'python3-dev<3.13' \
     py3-jinja2
 
-# Build a patched, legacy version of TBB for USD
-
-RUN curl https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2020.3.zip -o ./TBBv2020.3.zip -L
-COPY patches .
-RUN unzip ./TBBv2020.3.zip && cd oneTBB-2020.3 && \
-    patch include/tbb/task.h ../missing-namespace.patch && \
-    patch src/tbbmalloc/proxy.h ../disable-malloc-hook.patch && \
-    patch src/tbbmalloc/proxy.cpp ../prevent-undefined-glibc-macro-error.patch && \
-    make && \
-    mkdir /opt/vendored && \
-    mkdir /opt/vendored/lib && \
-    mkdir /opt/vendored/include && \
-    cp build/*_release/libtbb*.* /opt/vendored/lib && \
-    cp -R include/serial /opt/vendored/include/ && \
-    cp -R include/tbb /opt/vendored/include/
-
 # Get some imaging specific dependencies
-
 
 RUN apk update && \
     apk upgrade && \
     apk add --no-cache \
       mesa \
       mesa-dev \
+      opencl \
+      opencl-dev \
       opensubdiv \
       opensubdiv-dev \
       py3-opengl \
@@ -50,14 +37,12 @@ RUN apk update && \
 
 # Build USD with imaging
 
-RUN git clone --single-branch  -b v24.05-alpine --depth 1 https://github.com/rstelzleni/USD
+RUN git clone --single-branch  -b v25.05.01-alpine --depth 1 https://github.com/rstelzleni/USD
 
 RUN mkdir /src/USD-build
 WORKDIR /src/USD-build
 
 RUN cmake \
-    -DTBB_ROOT_DIR=/opt/vendored \
-    -DCMAKE_PREFIX_PATH=/opt/vendored \
     -DPXR_ENABLE_MATERIALX_SUPPORT=FALSE \
     -DPXR_BUILD_USDVIEW=FALSE \
     -DPXR_BUILD_TESTS=FALSE \
@@ -72,26 +57,34 @@ RUN cmake \
 RUN cmake --build . --config Release --target install -j8
 
 # Before shipping a new version uncomment below to run tests. Tests also need
-# to be enabled in the cmake command above
+# to be enabled in the cmake command above. See the notes for the most recent
+# version in the docs folder for any source changes needed to get tests passing
+# in our container.
 #
 # Since builds are repeatable once they're passing we can disable to save time
 # on docker builds.
 #
 #ENV DISPLAY=:1
-#RUN xinit -- /usr/bin/Xvfb :1 -screen 0 1024x768x24 & fluxbox & sleep 10 & ctest
+#RUN apk add --no-cache \
+#    glfw mesa-dri-gallium py3-opengl py3-pip xinit xrandr xterm xvfb
+#RUN pip install --break-system-packages glfw
+#RUN xinit -- /usr/bin/Xvfb :1 -screen 0 1024x768x24 & 
+#RUN ctest -O test.log --output-on-failure
 
 # Make the trimmed down image
 
-FROM alpine:3.19
-COPY --from=Builder /opt /opt
+FROM alpine
+COPY --from=builder /opt /opt
 ENV PYTHONPATH=/opt/USD/lib/python
 
 RUN apk update \
   && apk upgrade \
   && apk add --no-cache \
     boost-python3 \
+    onetbb \
+    opencl \
     opensubdiv \
-    'python3<3.12'
+    'python3<3.13'
 
 ENTRYPOINT [ "/opt/USD/bin/usdcat" ]
 

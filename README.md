@@ -7,6 +7,23 @@ https://hub.docker.com/repository/docker/rstelzleni/usd-alpine/general
 
 ## Versions
 
+### usd-25.05.01
+
+| image   | Download Size |
+| ------- | ------------- |
+| base    | ~43 MB        |
+| imaging | ~55 MB        |
+| gl      | ~160-170 MB   |
+
+Also available as usd-25.05.
+
+Notable changes from 24.05:
+
+- Python version is now 3.12
+- USD moved to oneTBB, so that's used in the images
+- Imaging now uses OpenCL, so that's included in imaging images
+- Fewer test failures than in the past, see docs/usd-25.05-notes.md for details
+
 ### usd-24.05
 
 | image   | Download Size |
@@ -30,13 +47,27 @@ Includes only the core libraries, no Alembic, MaterialX, etc. Includes Python
 
 ## Dev Process
 
-To make a new version, work in a USD branch that is cloned in the Dockerfile,
-for instance,
+To make a new version, first clone the USD version you want to wrap in the docker
+container, and make a new branch from it. Update the Dockerfile to pull your new
+branch, and then work there until alpine is working. 
+
+For example, to make a new branch for USD 24.03, you would do the following:
+
+```
+git fetch --tags upstream
+git checkout v24.03
+git switch -c v24.03-alpine
+```
+
+Then pull this branch in the Dockerfile to work in.
 
 https://github.com/rstelzleni/USD/tree/v24.03-alpine
 
-Build and run tests in the docker container. Once tests are passing, tests
-can be commented back out to shorten build times.
+The Dockefile can run tests as part of the build. This can take a long time, so
+it is normally commented out. When creating a new image uncomment the tests,
+enable them in the build flags, and make sure they pass, then once tests are
+passing comment them back out to improve build times and make a smaller image.
+The builds are repeatable so tests shouldn't change.
 
 When ready to publish, I've been publishing like
 

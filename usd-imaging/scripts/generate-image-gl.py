@@ -169,10 +169,6 @@ def main():
 
     args = parser.parse_args()
 
-    UsdAppUtils.framesArgs.ValidateCmdlineArgs(
-        parser, args, frameFormatArgName="outputImagePath"
-    )
-
     args.imageWidth = max(args.imageWidth, 1)
 
     purposes = args.purposes.replace(",", " ").split()
@@ -207,6 +203,10 @@ def main():
     if not usdStage:
         logger.error("Could not open USD stage: %s" % args.usdFilePath)
         return 1
+
+    UsdAppUtils.framesArgs.ValidateCmdlineArgs(
+        parser, args, usdStage, frameFormatArgName="outputImagePath"
+    )
 
     # Get the camera at the given path (or with the given name).
     usdCamera = UsdAppUtils.GetCameraAtPath(usdStage, args.camera)
@@ -255,7 +255,7 @@ def main():
 
     # Initialize FrameRecorder
     frameRecorder = UsdAppUtils.FrameRecorder(
-        rendererPluginId, args.gpuEnabled, args.rsPrimPath
+        rendererPluginId, args.gpuEnabled
     )
     frameRecorder.SetImageWidth(args.imageWidth)
     frameRecorder.SetComplexity(args.complexity.value)
@@ -268,7 +268,7 @@ def main():
 
     for timeCode in args.frames:
         logger.info("Recording time code: %s" % timeCode)
-        outputImagePath = args.outputImagePath.format(frame=timeCode.GetValue())
+        outputImagePath = args.outputImagePath.format(frame=timeCode)
         try:
             frameRecorder.Record(usdStage, usdCamera, timeCode, outputImagePath)
         except Tf.ErrorException as e:
