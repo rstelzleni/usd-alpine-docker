@@ -21,7 +21,7 @@ Notable changes from 24.05:
 
 - Python version is now 3.12
 - USD moved to oneTBB, so that's used in the images
-- Imaging now uses openCl, so that's include in imaging images
+- Imaging now uses OpenCL, so that's included in imaging images
 - Fewer test failures than in the past, see docs/usd-25.05-notes.md for details
 
 ### usd-24.05
