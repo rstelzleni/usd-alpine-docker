@@ -1,4 +1,4 @@
-FROM alpine:3 AS builder
+FROM alpine:3.23.3 AS builder
 WORKDIR /src
 
 RUN apk update \
@@ -15,13 +15,13 @@ RUN apk update \
     linux-headers \
     onetbb \
     onetbb-dev \
-    'python3<3.13' \
-    'python3-dev<3.13' \
+    'python3' \
+    'python3-dev' \
     py3-jinja2
 
 # Build USD
 
-RUN git clone --single-branch  -b v25.05.01-alpine --depth 1 https://github.com/rstelzleni/USD
+RUN git clone --single-branch  -b v26.03-alpine --depth 1 https://github.com/rstelzleni/USD
 
 RUN mkdir /src/USD-build
 WORKDIR /src/USD-build
@@ -52,7 +52,7 @@ RUN cmake --build . --config Release --target install -j8
 
 # Make the trimmed down image
 
-FROM alpine:3
+FROM alpine:3.23.3
 COPY --from=builder /opt /opt
 ENV PYTHONPATH=/opt/USD/lib/python
 
@@ -61,7 +61,7 @@ RUN apk update \
   && apk add --no-cache \
     boost-python3 \
     onetbb \
-    'python3<3.13'
+    'python3'
 
 ENTRYPOINT [ "/opt/USD/bin/usdcat" ]
 

@@ -1,11 +1,25 @@
-# USD Alpine Docker
+# OpenUSD Alpine Docker
 
-USD builds in alpine docker, for making slim docker containers with USD support.
+OpenUSD builds in alpine docker, for making slim docker containers with USD support.
 
 Builds available on dockerhub
 https://hub.docker.com/repository/docker/rstelzleni/usd-alpine/general
 
 ## Versions
+
+### usd-26.03
+
+| image   | Download Size |
+| ------- | ------------- |
+| base    | ~45 MB        | 
+| imaging | ~58 MB        |
+| gl      | ~160 MB       |
+
+Notable changes:
+- Alpine base version is pinned to 3.23.3
+- Python version 3.12
+- Non-imaging tests now only have one failure, testArchStackTrace 
+- Fewer imaging test failures, see docs/usd-26.03-notes.md for details
 
 ### usd-25.05.01
 

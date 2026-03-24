@@ -1,4 +1,4 @@
-FROM rstelzleni/usd-alpine:imaging-25.05.01
+FROM rstelzleni/usd-alpine:imaging-26.03
 
 # Add dependencies for opengl
 
