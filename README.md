@@ -2,8 +2,7 @@
 
 OpenUSD builds in alpine docker, for making slim docker containers with USD support.
 
-Builds available on dockerhub
-https://hub.docker.com/repository/docker/rstelzleni/usd-alpine/general
+[Builds available on dockerhub](https://hub.docker.com/r/rstelzleni/usd-alpine)
 
 ## Versions
 
